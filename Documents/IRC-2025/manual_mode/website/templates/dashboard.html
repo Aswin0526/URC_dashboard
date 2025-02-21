@@ -1,0 +1,122 @@
+{% extends 'index.html' %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/dashboard.css') }}"
+/>
+<div class="body">
+  <!-- <div class="container"> -->
+    <div class="camera-section">
+      <div class="primary-camera">
+        <img
+          class="camera-main"
+          src="{{ url_for('video_feed1') }}"
+          alt="Main Video Feed"
+          id="mainCamera"
+        />
+      </div>
+      <div class="secondary-cameras">
+        <img
+          src="{{ url_for('video_feed2') }}"
+          alt="Camera Feed 1"
+          class="secondary-cam"
+          width="50"
+          height="50"
+        />
+        <img
+          src="{{ url_for('video_feed3') }}"
+          alt="Camera Feed 2"
+          class="secondary-cam"
+          width="50"
+          height="50"
+        />
+        <img
+          src="{{ url_for('video_feed4') }}"
+          alt="Camera Feed 3"
+          class="secondary-cam"
+          width="50"
+          height="50"
+        />
+      </div>
+    </div>
+    <!-- <div class="controls-section">
+      <div class="timer-box">
+        <div class="timer-display">
+          <h1 id="timer">00:00:00</h1>
+        </div>
+        <div class="buttons">
+          <button id="start">Start</button>
+          <button id="stop">Stop</button>
+          <button id="restart">Restart</button>
+        </div>
+      </div>
+      <div class="empty-box"></div>
+    </div> -->
+  <!-- </div> -->
+</div>
+
+<script>
+  // Camera switching functionality
+
+  // Camera switching functionality
+  document.querySelectorAll(".secondary-cam").forEach((camera) => {
+    camera.addEventListener("click", function () {
+      const mainCamera = document.getElementById("mainCamera");
+
+      // Save the current main camera's src
+      const previousMainSrc = mainCamera.src;
+
+      // Swap the clicked secondary camera's src with the main camera's src
+      mainCamera.src = this.src;
+      this.src = previousMainSrc;
+    });
+  });
+
+  // Timer functionality
+  let timerInterval;
+  let seconds = 0;
+  let isRunning = false;
+
+  function formatTime(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function updateTimer() {
+    seconds++;
+    document.getElementById("timer").textContent = formatTime(seconds);
+  }
+
+  document.getElementById("start").addEventListener("click", function () {
+    if (!isRunning) {
+      isRunning = true;
+      timerInterval = setInterval(updateTimer, 1000);
+      this.disabled = true;
+      document.getElementById("stop").disabled = false;
+    }
+  });
+
+  document.getElementBy;
+  Id("stop").addEventListener("click", function () {
+    if (isRunning) {
+      isRunning = false;
+      clearInterval(timerInterval);
+      this.disabled = true;
+      document.getElementById("start").disabled = false;
+    }
+  });
+
+  document.getElementById("restart").addEventListener("click", function () {
+    isRunning = false;
+    clearInterval(timerInterval);
+    seconds = 0;
+    document.getElementById("timer").textContent = "00:00:00";
+    document.getElementById("start").disabled = false;
+    document.getElementById("stop").disabled = false;
+  });
+</script>
+{% endblock %}

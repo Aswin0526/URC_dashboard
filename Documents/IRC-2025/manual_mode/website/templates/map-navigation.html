@@ -1,0 +1,68 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div id="map" style="height: 600px;"></div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Include Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Initialize the map
+    var lat = 12.961958999999998;
+    var long = 80.057472;
+    var map = L.map('map').setView([lat, long], 13);  // Starting point
+
+    // Add a tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+    // Add a marker for the vehicle
+    var vehicleMarker = L.marker([lat, long]).addTo(map);
+
+    // Set a destination marker
+    var destination = [lat + (-0.0002), long + 0.001];  // Example coordinates for the destination
+    L.marker(destination).addTo(map).bindPopup('Destination').openPopup();
+
+    // Initialize an array to store the path
+    var pathCoordinates = [[lat, long]];  // Start with the initial point
+    var val = 0;
+    // Create a polyline to show the path
+    var pathPolyline = L.polyline(pathCoordinates, { color: 'blue' }).addTo(map);
+    var start = 1;
+    var bias = 0;
+    // Function to update the vehicle location
+    function updateLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // For demonstration purposes, simulate movement with `val`
+                    const latitude = position.coords.latitude + val;
+                    const longitude = position.coords.longitude;
+
+                    // Update marker position
+                    vehicleMarker.setLatLng([lat, long]);
+                    map.setView([lat, long]);
+
+                    // Add the new position to the path and update the polyline
+                    pathCoordinates.push([lat, long]);
+                    pathPolyline.setLatLngs(pathCoordinates);
+                    console.log(lat, long);
+
+                    val += 0.000001;
+                    lat += -(0.000001) * (start);
+                    long += val;
+                    start += 0.1;
+                },
+                function(error) {
+                    console.error('Error fetching location:', error.message);
+                }
+            );
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+    }
+
+    // Update location every 2 seconds
+    setInterval(updateLocation, 1000);
+</script>
+{% endblock %}

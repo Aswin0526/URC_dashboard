@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Rover UI with STL</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #info-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #fff;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    .wheel-data {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="info-panel">
+  <h3>Rover Wheel Data</h3>
+  <div class="wheel-data" id="wheel-1">Wheel 1 - Amp: <span id="amp1">0</span> | Volt: <span id="volt1">0</span></div>
+  <div class="wheel-data" id="wheel-2">Wheel 2 - Amp: <span id="amp2">0</span> | Volt: <span id="volt2">0</span></div>
+  <div class="wheel-data" id="wheel-3">Wheel 3 - Amp: <span id="amp3">0</span> | Volt: <span id="volt3">0</span></div>
+  <div class="wheel-data" id="wheel-4">Wheel 4 - Amp: <span id="amp4">0</span> | Volt: <span id="volt4">0</span></div>
+</div>
+
+<script src="three.min.js"></script>
+<script src="STLLoader.js"></script>
+
+<script>
+  let scene, camera, renderer, rover;
+
+  // Initialize Three.js Scene
+  function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 200;
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lighting
+    const light = new THREE.DirectionalLight(0xff8419, 1);
+    light.position.set(5, 5, 5).normalize();
+    scene.add(light);
+
+    // Load Rover Model (STL format)
+    const loader = new THREE.STLLoader();
+    loader.load('rover_model.stl', function(geometry) {
+      const material = new THREE.MeshPhongMaterial({ color: 0xffffff});
+      rover = new THREE.Mesh(geometry, material);
+      rover.scale.set(0.1, 0.1, 0.1);  // Adjust scale if needed
+      scene.add(rover);
+      animate();
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', onWindowResize, false);
+
+    // Connect WebSocket for live data
+    connectWebSocket();
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  // WebSocket connection
+  function connectWebSocket() {
+    const socket = new WebSocket('ws://localhost:8000');
+    socket.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      document.getElementById('amp1').textContent = data.wheel1.amp;
+      document.getElementById('volt1').textContent = data.wheel1.volt;
+      document.getElementById('amp2').textContent = data.wheel2.amp;
+      document.getElementById('volt2').textContent = data.wheel2.volt;
+      document.getElementById('amp3').textContent = data.wheel3.amp;
+      document.getElementById('volt3').textContent = data.wheel3.volt;
+      document.getElementById('amp4').textContent = data.wheel4.amp;
+      document.getElementById('volt4').textContent = data.wheel4.volt;
+    };
+  }
+
+  // Render loop
+  function animate() {
+    requestAnimationFrame(animate);
+    if (rover) {
+        rover.rotation.y += 0.001;  // Rotate the rover model for animation
+        // rover.rotation.x += 0.001;
+        // rover.rotation.z += 0.001;  // Rotate for view
+      console.log(rover.rotation.y);  // Rotate for view
+    }
+    renderer.render(scene, camera);
+  }
+
+  init();
+</script>
+</body>
+</html>

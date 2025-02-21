@@ -1,0 +1,136 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="grid grid-cols-4 gap-12">
+    <div class="flex flex-col font-bold text-xl text-center items-center">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl text-center">Hydrogen Conc.</h1>
+        <canvas id="hydrogen-concentration" width="100" height="80"></canvas>
+    </div>
+    <div class="flex flex-col text-xl font-bold items-center">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl text-center">Combustible gases</h1>
+        <div class="flex justify-center items-center h-full">
+            <svg width="200" height="200" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.915" fill="#000" stroke="" stroke-width="3"></circle>
+                <circle cx="18" cy="18" r="15.915" id="combustible-gases-circle"
+                        fill="none"
+                        stroke="#ff8419"
+                        stroke-width="1"
+                        stroke-dasharray="{{data.MQ_9.stroke_dasharray}}"
+                        stroke-dashoffset="25"
+                        stroke-linecap="round"></circle>
+                <text id="combustible-gases" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#fff">
+                    {{data.MQ_9.percentage}}%
+                </text>
+            </svg>
+        </div>
+    </div>
+    <div class="flex flex-col font-bold text-2xl text-center items-center">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl text-center">Air quality</h1>
+        <canvas id="air-quality" width="100" height="80"></canvas>      
+    </div>
+    <div class="flex flex-col text-left">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl text-center">BME680</h1>
+        <div class="flex flex-col justify-center h-full p-8">
+            <div>
+                Temperature : <span id="BME680-temperature">{{data.BME680.temperature}}</span>°C
+            </div>
+            <div>
+                Humidity : <span id="BME680-humidity">{{data.BME680.humidity}}</span>%
+            </div>
+            <div>
+                Pressure : <span id="BME680-pressure">{{data.BME680.pressure}}</span>pa
+            </div>
+            <div>
+                VOC : <span id="BME680-voc">{{data.BME680.voc}}</span>IAQ
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-col text-2xl font-bold items-center">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl text-center">Soil moisture</h1>
+        <div class="flex justify-center items-center h-full">
+            <svg width="200" height="200" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.915" fill="#000" stroke="" stroke-width="3"></circle>
+                <circle cx="18" cy="18" r="15.915" id="soil-moisture-circle"
+                        fill="none"
+                        stroke="#ff8419"
+                        stroke-width="1"
+                        stroke-dasharray="{{data.SOIL_MOISTURE.stroke_dasharray}}"
+                        stroke-dashoffset="25"
+                        stroke-linecap="round"></circle>
+                <text id="soil-moisture" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#fff">
+                    {{data.SOIL_MOISTURE.value}}%
+                </text>
+            </svg>
+        </div>
+    </div>
+    <div class="flex flex-col font-bold text-xl text-center items-center">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl text-center">Soil Temperature</h1>
+        <div id="container" class="flex justify-center items-center h-full"></div>
+    </div>
+    <div class="flex flex-col justify-center items-center">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl font-bold text-center">pH level</h1>
+        <div class="flex justify-center items-center h-full">
+            <canvas id="pH-chart" width="275" height="275"></canvas>
+        </div>
+    </div>
+    <div class="flex flex-col text-left">
+        <h1 class="w-full bg-black text-white text-xl rounded-xl font-bold text-center">NPK Sensor</h1>
+        <canvas id="NPK" width="100" height="100"></canvas>
+    </div>
+</div>
+<link href="{{ url_for('static', filename='css/anychart-ui.min.css') }}" type="text/css" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/anychart-font.min.css') }}" type="text/css" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/anychart-base.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/anychart-linear-gauge.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/hydrogenConcentration.js')}}"></script>
+<script src="{{ url_for('static', filename='js/combustibleGases.js')}}"></script>
+<script src="{{ url_for('static', filename='js/pH_chart.js')}}"></script>
+<script src="{{ url_for('static', filename='js/airQuality.js')}}"></script>
+<script src="{{ url_for('static', filename='js/soilMoisture.js')}}"></script>
+<script src="{{ url_for('static', filename='js/NPK.js')}}"></script>
+<script src="{{ url_for('static', filename='js/BME680.js')}}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var gauge = anychart.gauges.linear();
+
+        function updateGauge(data) {
+            gauge.data([data]);
+        }
+    
+        var initialPHData = 0;
+        gauge.data([initialPHData]).padding(10, 0, 30, 0);
+    
+        var scale = gauge.scale();
+        scale.minimum(-40).maximum(125).ticks({ interval: 25 });
+        {% raw %}
+        var axis = gauge.axis();
+        axis.scale(scale).width('0.5%').offset('-3%');
+        axis.labels().useHtml(true).format('{%Value} &deg C');
+        {% endraw %}
+        var indicator = gauge.thermometer(0);
+        indicator
+            .fill('#ff8419')
+    
+        gauge.container('container');
+        gauge.draw();
+    
+        async function fetchSoilTemperature() {
+            try {
+                const response = await fetch('http://192.168.1.110:5000/science-subsystem/soil-temperature')
+                const data = await response.json()
+                console.log("fetchST" + data)
+                return data.soil_temperature
+            } catch (error) {
+                console.error("Error fetching soil temperature", error)
+                return 0
+            }
+        }
+
+        setInterval(async function() {
+            var soilTemperature = await fetchSoilTemperature();
+            console.log("soil temperature " + soilTemperature);
+            updateGauge(soilTemperature);
+        }, 1000);
+    });
+</script>
+{% endblock %}
