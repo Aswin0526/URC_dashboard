@@ -1,5 +1,6 @@
 {% extends 'index.html' %} {% block content %}
 <style>
+  /* Overall container styling */
   .container {
     display: flex;
     width: 100%;
@@ -7,255 +8,258 @@
     background: #f0f0f0;
     position: relative;
     top: 2%;
+    box-sizing: border-box;
+    padding: 10px;
   }
 
   .camera-section {
-    width: 70%;
-    height: 100%;
     display: flex;
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .main-feed {
+    flex-direction: row;
     width: 70%;
-    height: 100%;
-    background: #333;
-    border-radius: 8px;
+    gap: 2px;
   }
 
-  .side-feeds {
+  .go-pro {
     width: 30%;
     height: 100%;
+    background-color: #000; /* Ensure background is black */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .camera-feeds {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 2px;
+  }
+
+  .zed {
+    width: 100%;
+    height: 40%;
+    background: #000; /* Fallback background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cameras {
+    width: 100%;
+    height: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    gap: 5px;
+  }
+
+  .cam1 {
+    width: 50%;
+    height: 100%;
+    background: #000; /* Fallback background */
+    display: flex;
+  }
+
+  .cam2 {
+    width: 50%;
+    height: 100%;
+  }
+
+  /* Right Section: Status and Control */
+  .right-section {
+    width: 30%;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
-  .camera-container {
-    height: 33.33%;
-    background: #333;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-  }
-
-  .camera-container:hover {
-    opacity: 0.8;
-  }
-
-  .right-section {
-    width: 30%;
-    height: 100%;
-    padding: 10px;
-  }
-
+  /* Status Box Styling */
   .status-box {
-    height: 50%;
+    flex: 1;
     background: #000;
-    margin-bottom: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-wrap: wrap;
+    overflow: hidden;
   }
-
-  .part {
+  .status-box .part {
     width: 50%;
     height: 50%;
     box-sizing: border-box;
-    padding: 2px;
+    padding: 4px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
   }
-
-  .image-part img {
+  .status-box .image-part img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: inherit;
   }
 
-  /* Enhanced Bar Styling */
+  /* Bar styling */
   .bar-container {
     width: 100%;
-    margin: 15px 0;
+    margin: 5px 0;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    gap: 5px;
   }
-
   .bar-label {
     color: #fff;
-    margin-bottom: 5px;
     font-size: 14px;
+    width: 20px;
+    text-align: center;
   }
-
   .bar {
-    width: 80%;
+    flex: 1;
     height: 20px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     position: relative;
     overflow: hidden;
   }
-
   .bar-fill {
     height: 100%;
     background-color: #ff6b00;
     border-radius: 10px;
     transition: width 0.3s ease;
   }
-
   .bar-value {
     position: absolute;
-    right: 10px;
+    right: 5px;
     top: 50%;
     transform: translateY(-50%);
     color: #fff;
     font-size: 12px;
     font-weight: bold;
   }
+
+  /* Control box with canvas and overlay */
   .control-box {
-    height: 50%;
+    flex: 1;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
+    overflow: hidden;
+  }
+  #trackingCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .status-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 50;
   }
 
+  /* Ensure camera-feed images fill their container or show black background */
   .camera-feed {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
-  }
-
-  .camera-label {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-  }
-
-  #compass {
-    position: absolute;
-    top: 40px;
-    right: 40px;
-    width: 150px;
-    height: 120px;
-    z-index: 100;
-    transition: transform 0.5s ease;
-  }
-
-  canvas {
-    background: white;
-    width: 100%;
-    height: 100%;
-  }
-
-  .status-overlay {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: monospace;
+    background-color: #000; /* Fallback color if image fails to load */
   }
 </style>
 
 <div class="container">
   <div class="camera-section">
-    <div class="main-feed" id="mainFeedContainer" style="position: relative">
-      <img src="static/images/compass.png" alt="" id="compass" />
-      <div class="camera-label">Camera 1</div>
+    <div class="go-pro">
       <img
-        src="{{ url_for('video_feed1') }}"
-        alt="Camera 1"
+        src="{{ url_for('video_feed4') }}"
+        alt="Camera 4"
         class="camera-feed"
-        data-camera="1"
       />
     </div>
-    <div class="side-feeds">
-      <div class="camera-container">
-        <div class="camera-label">Camera 2</div>
-        <img
-          src="{{ url_for('video_feed2') }}"
-          alt="Camera 2"
-          class="camera-feed"
-          data-camera="2"
-        />
-      </div>
-      <div class="camera-container">
-        <div class="camera-label">Camera 3</div>
-        <img
-          src="{{ url_for('video_feed3') }}"
-          alt="Camera 3"
-          class="camera-feed"
-          data-camera="3"
-        />
-      </div>
-      <div class="camera-container">
-        <div class="camera-label">Camera 4</div>
+    <div class="camera-feeds">
+      <div class="zed">
         <img
           src="{{ url_for('video_feed4') }}"
           alt="Camera 4"
           class="camera-feed"
-          data-camera="4"
         />
+      </div>
+      <div class="cameras">
+        <div class="cam1">
+          <img
+            src="{{ url_for('video_feed4') }}"
+            alt="Camera 4"
+            class="camera-feed"
+          />
+        </div>
+        <div class="cam2">
+          <img
+            src="{{ url_for('video_feed4') }}"
+            alt="Camera 4"
+            class="camera-feed"
+          />
+        </div>
       </div>
     </div>
   </div>
-  <div class="right-section">
-    <div class="status-box">
-      <div class="part">
-        <img src="/xview_stream" alt="Image 1" />
-      </div>
 
+  <!-- Right Section: Status and Control -->
+  <div class="right-section">
+    <!-- Status Box -->
+    <div class="status-box">
+      <!-- Top-left: Xview stream -->
+      <div class="part">
+        <img src="/xview_stream" alt="Xview" class="camera-feed" />
+      </div>
+      <!-- Top-right: Bars for X, Y, Z -->
       <div class="part">
         <div class="bar-container">
-          <h2 style="color: white">X</h2>
+          <span class="bar-label">X</span>
           <div class="bar" id="bar-x">
             <div class="bar-fill"></div>
             <div class="bar-value">0%</div>
           </div>
         </div>
         <div class="bar-container">
-          <h2 style="color: white">Y</h2>
+          <span class="bar-label">Y</span>
           <div class="bar" id="bar-y">
             <div class="bar-fill"></div>
             <div class="bar-value">0%</div>
           </div>
         </div>
         <div class="bar-container">
-          <h2 style="color: white">Z</h2>
+          <span class="bar-label">Z</span>
           <div class="bar" id="bar-z">
             <div class="bar-fill"></div>
             <div class="bar-value">0%</div>
           </div>
         </div>
       </div>
-
+      <!-- Bottom-left: Yview stream -->
       <div class="part image-part">
-        <img src="/yview_stream" alt="Image 1" />
+        <img src="/yview_stream" alt="Yview" class="camera-feed" />
       </div>
-
+      <!-- Bottom-right: Zview stream -->
       <div class="part image-part">
-        <img src="/zview_stream" alt="Image 2" />
+        <img src="/zview_stream" alt="Zview" class="camera-feed" />
       </div>
     </div>
 
+    <!-- Control Box with Canvas and Overlay -->
     <div class="control-box">
       <canvas id="trackingCanvas"></canvas>
       <div class="status-overlay">
@@ -268,137 +272,62 @@
 </div>
 
 <script>
-  // Initialize camera positions tracking
-  const cameraPositions = {
-    main: 1, // Camera 1 starts in main position
-    side1: 2, // Camera 2 starts in first side position
-    side2: 3, // Camera 3 starts in second side position
-    side3: 4, // Camera 4 starts in third side position
-  };
-
-  // Add click listeners to all cameras
-  document.querySelectorAll(".camera-feed").forEach((camera) => {
-    camera.parentElement.addEventListener("click", function () {
-      const clickedCameraNumber = parseInt(camera.getAttribute("data-camera"));
-      switchCamera(clickedCameraNumber);
-    });
-  });
-
-  function switchCamera(clickedCameraNumber) {
-    // Find the position of the clicked camera
-    let clickedPosition = null;
-    for (const [position, cameraNum] of Object.entries(cameraPositions)) {
-      if (cameraNum === clickedCameraNumber) {
-        clickedPosition = position;
-        break;
-      }
-    }
-
-    if (clickedPosition && clickedPosition !== "main") {
-      // Get the main camera number
-      const mainCameraNumber = cameraPositions.main;
-
-      // Get the camera elements
-      const mainCamera = document.querySelector("#mainFeedContainer img");
-      const clickedCamera = document.querySelector(
-        `[data-camera="${clickedCameraNumber}"]`
-      );
-
-      // Swap sources and data attributes
-      const mainSrc = mainCamera.src;
-      mainCamera.src = clickedCamera.src;
-      clickedCamera.src = mainSrc;
-
-      // Update data-camera attributes
-      mainCamera.setAttribute("data-camera", clickedCameraNumber);
-      clickedCamera.setAttribute("data-camera", mainCameraNumber);
-
-      // Update labels
-      document.querySelector(
-        "#mainFeedContainer .camera-label"
-      ).textContent = `Camera ${clickedCameraNumber}`;
-      clickedCamera.parentElement.querySelector(
-        ".camera-label"
-      ).textContent = `Camera ${mainCameraNumber}`;
-
-      // Update positions tracking
-      cameraPositions[clickedPosition] = mainCameraNumber;
-      cameraPositions.main = clickedCameraNumber;
-    }
-  }
-
+  // Update Bars: Random value between 60 and 80 (simulate acceleration)
   function updateBar(barId) {
     const bar = document.getElementById(barId);
     const fill = bar.querySelector(".bar-fill");
     const valueLabel = bar.querySelector(".bar-value");
-    // Generate a random value between 0 and 100 (simulate acceleration)
     const value = 60 + Math.floor(Math.random() * 21);
     fill.style.width = value + "%";
     valueLabel.textContent = value + "%";
   }
 
-  // Function to update all three bars
   function updateBars() {
     updateBar("bar-x");
     updateBar("bar-y");
     updateBar("bar-z");
   }
 
-  // Update the bars every second
   setInterval(updateBars, 1000);
-  // Initial update
   updateBars();
 
-  // compass
-
+  // Compass update
   async function updateCompass() {
     try {
       const response = await fetch("/compass-value");
       const data = await response.json();
       const angle = parseFloat(data.angle);
-      // Update the compass image rotation via CSS transform
-      const compass = document.getElementById("compass");
-      compass.style.transform = `rotate(${angle}deg)`;
+      document.getElementById(
+        "compass"
+      ).style.transform = `rotate(${angle}deg)`;
     } catch (error) {
       console.error("Error fetching compass value:", error);
     }
   }
-
-  // Update the compass value every second
   setInterval(updateCompass, 1000);
-
-  // Initial update on page load.
   updateCompass();
 
-  // roverpath
-  // Get the control box dimensions
+  // Rover Path Drawing on Canvas
   const controlBox = document.querySelector(".control-box");
   const canvas = document.getElementById("trackingCanvas");
   const ctx = canvas.getContext("2d");
 
-  // Set canvas dimensions to match control box
   function resizeCanvas() {
-    const boxRect = controlBox.getBoundingClientRect();
-    canvas.width = boxRect.width;
-    canvas.height = boxRect.height;
+    const rect = controlBox.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
   }
-
-  // Initial resize
   resizeCanvas();
-
-  // Handle window resize
   window.addEventListener("resize", resizeCanvas);
 
   let pathPoints = [];
-  let pathSegments = []; // Store multiple path segments
+  let pathSegments = [];
 
   function drawRover(x, y, heading) {
     const size = 8;
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate((heading * Math.PI) / 180);
-
-    // Draw triangle
     ctx.beginPath();
     ctx.moveTo(size, 0);
     ctx.lineTo(-size, -size);
@@ -406,21 +335,16 @@
     ctx.closePath();
     ctx.fillStyle = "#0066ff";
     ctx.fill();
-
-    // Draw circle at base
     ctx.beginPath();
     ctx.arc(0, 0, size / 2, 0, 2 * Math.PI);
     ctx.fillStyle = "#003d99";
     ctx.fill();
-
     ctx.restore();
   }
 
   function drawPath() {
-    // Draw all path segments
     for (const segment of pathSegments) {
       if (segment.length < 2) continue;
-
       const gradient = ctx.createLinearGradient(
         0,
         0,
@@ -429,18 +353,13 @@
       );
       gradient.addColorStop(0, "#ff6b00");
       gradient.addColorStop(1, "#ff3300");
-
       ctx.beginPath();
       ctx.moveTo(segment[0].x, segment[0].y);
-
-      // Draw curved path through points
       for (let i = 1; i < segment.length - 2; i++) {
         const xc = (segment[i].x + segment[i + 1].x) / 2;
         const yc = (segment[i].y + segment[i + 1].y) / 2;
         ctx.quadraticCurveTo(segment[i].x, segment[i].y, xc, yc);
       }
-
-      // Handle last two points
       if (segment.length > 2) {
         ctx.quadraticCurveTo(
           segment[segment.length - 2].x,
@@ -449,15 +368,12 @@
           segment[segment.length - 1].y
         );
       }
-
       ctx.strokeStyle = gradient;
       ctx.lineWidth = 3;
       ctx.stroke();
     }
 
-    // Draw current path segment
     if (pathPoints.length < 2) return;
-
     const gradient = ctx.createLinearGradient(
       0,
       0,
@@ -466,16 +382,13 @@
     );
     gradient.addColorStop(0, "#ff6b00");
     gradient.addColorStop(1, "#ff3300");
-
     ctx.beginPath();
     ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
-
     for (let i = 1; i < pathPoints.length - 2; i++) {
       const xc = (pathPoints[i].x + pathPoints[i + 1].x) / 2;
       const yc = (pathPoints[i].y + pathPoints[i + 1].y) / 2;
       ctx.quadraticCurveTo(pathPoints[i].x, pathPoints[i].y, xc, yc);
     }
-
     if (pathPoints.length > 2) {
       ctx.quadraticCurveTo(
         pathPoints[pathPoints.length - 2].x,
@@ -484,7 +397,6 @@
         pathPoints[pathPoints.length - 1].y
       );
     }
-
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 3;
     ctx.stroke();
@@ -494,14 +406,12 @@
     const gridSize = 50;
     ctx.strokeStyle = "#e6e6e6";
     ctx.lineWidth = 0.5;
-
     for (let x = 0; x <= canvas.width; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
       ctx.stroke();
     }
-
     for (let y = 0; y <= canvas.height; y += gridSize) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -514,32 +424,20 @@
     try {
       const response = await fetch("/rover-position");
       const data = await response.json();
-
-      const scaledData = {
+      const scaled = {
         x: (data.x / 800) * canvas.width,
         y: (data.y / 600) * canvas.height,
         heading: data.heading,
       };
-
-      pathPoints.push(scaledData);
-
-      // If path gets too long, store it as a segment and start a new path
+      pathPoints.push(scaled);
       if (pathPoints.length > 100) {
         pathSegments.push([...pathPoints]);
-        pathPoints = [pathPoints[pathPoints.length - 1]]; // Start new path from last point
+        pathPoints = [pathPoints[pathPoints.length - 1]];
       }
-
-      // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw background elements
       drawGrid();
-
-      // Draw all paths
       drawPath();
-      drawRover(scaledData.x, scaledData.y, scaledData.heading);
-
-      // Update status overlay
+      drawRover(scaled.x, scaled.y, scaled.heading);
       document.getElementById("xPos").textContent = data.x.toFixed(1);
       document.getElementById("yPos").textContent = data.y.toFixed(1);
       document.getElementById("heading").textContent = data.heading.toFixed(1);
@@ -547,8 +445,6 @@
       console.error("Error updating rover position:", error);
     }
   }
-
-  // Update position every 100ms for smooth animation
   setInterval(updateRoverPosition, 100);
 </script>
 {% endblock %}
