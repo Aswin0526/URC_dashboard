@@ -1,4 +1,4 @@
-from flask import render_template, Response, Flask,request,jsonify
+from flask import render_template, Response, Flask,request,jsonify,send_file    
 import random
 import cv2
 import numpy as np
@@ -6,8 +6,14 @@ import numpy as np
 import time
 import math
 # from pymavlink import mavutil
+import matplotlib.pyplot as plt 
 import shutil
 import os
+import json
+import io
+from PIL import Image
+from io import BytesIO
+import threading
 
 app = Flask(__name__)
 
@@ -192,20 +198,6 @@ def video_feed4():
     # Route for the video feed
     return Response(generate_frames4(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/science-subsystem')
-def science_subsystem():
-    data = {
-        "MQ_8": {"value": 0},
-        "MQ_9": {"percentage": 0, "stroke_dasharray": f"{0}, {100}"},
-        "MQ_135": {"value": 0},
-        "BME680": {"temperature": 0, "humidity": 0, "pressure": 0, "voc": 0},
-        "SOIL_MOISTURE": {"value": 0, "stroke_dasharray": f"{0}, {100}"},
-        "SOIL_TEMPERATURE": 0,
-        "pH_Level": 0,
-        "NPK_SENSOR": {"nitrogen": 0, "phosphorus": 0, "potassium": 0}
-    }
-    return render_template('science.html', data=data)
-
 @app.route('/power-subsystem')
 def power_subsystem():
     return render_template('power.html')
@@ -223,40 +215,41 @@ def save_coordinates():
     try:
         data = request.get_json()
 
-        # Folder where coordinates will be stored
-        folder = os.getcwd()+"\static\GNSS_coordinates"
-        print(folder)
+        # Folder where coordinates will be stored (inside static)
+        folder = os.path.join(os.getcwd(), "static", "GNSS_coordinates")
+        print("Saving to folder:", folder)
 
         # Delete the folder if it exists, then create a new one
         if os.path.exists(folder):
             shutil.rmtree(folder)
         os.makedirs(folder)
 
-        # Extract coordinates from the JSON payload
-        coords = [
-            data.get("gnss1", ""),
-            data.get("gnss2", ""),
-            data.get("gnss3", ""),
-            data.get("gnss4", ""),
-            data.get("gnss5", ""),
-            data.get("gnss6", ""),
-            data.get("gnss7", "")
-        ]
-        print(coords)
-        content = "\n".join(coords)
-
-        # Save the coordinates into a text file inside the folder
-        file_path = os.path.join(folder, "coordinates.txt")
+        # Save the JSON data directly
+        file_path = os.path.join(folder, "coordinates.json")
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(content)
+            json.dump(data, f, indent=2)
 
         # Return a JSON response with a redirect URL
-        # Replace the URL below with your desired destination
         return jsonify({"redirectUrl": "/autonomous-mode/GNSS-submitted"})
 
     except Exception as e:
         print("Error processing GNSS coordinates:", e)
         return jsonify({"error": "Internal Server Error"}), 500
+
+
+@app.route('/science-subsystem')
+def science_subsystem():
+    data = {
+        "MQ_8": {"value": 0},
+        "MQ_9": {"percentage": 0, "stroke_dasharray": f"{0}, {100}"},
+        "MQ_135": {"value": 0},
+        "BME680": {"temperature": 0, "humidity": 0, "pressure": 0, "voc": 0},
+        "SOIL_MOISTURE": {"value": 0, "stroke_dasharray": f"{0}, {100}"},
+        "SOIL_TEMPERATURE": 0,
+        "pH_Level": 0,
+        "NPK_SENSOR": {"nitrogen": 0, "phosphorus": 0, "potassium": 0}
+    }
+    return render_template('science.html', data=data)
 
 @app.route('/science-subsystem/hydrogen-concentration')
 def hydrogen_concentration_data():
@@ -307,6 +300,219 @@ def rover_location():
     }
     return location
 
+
+
+def generate_dummy_gps():
+    # Simulate GPS movement around Bangalore
+    base_lat = 12.9716 + random.uniform(-0.01, 0.01)
+    base_long = 77.5946 + random.uniform(-0.01, 0.01)
+    return {"latitude": round(base_lat, 6), "longitude": round(base_long, 6)}
+
+def generate_dummy_compass():
+    # Simulate compass heading (0-360 degrees)
+    return random.randint(0, 359)
+
+def generate_dummy_path():
+    # Simulate current position in path
+    current_time = time.time()
+    # Create a moving point that follows the predefined path
+    path_index = int((current_time % 7))  # Cycle through 7 points
+    return path_index
+
+@app.route('/api/sensor_data')
+def get_sensor_data():
+    gps = generate_dummy_gps()
+    compass = generate_dummy_compass()
+    mission_status = [
+        random.choice([True, False]) for _ in range(7)
+    ]
+    path_progress = generate_dummy_path()
+    
+    return jsonify({
+        "gps": gps,
+        "compass": compass,
+        "mission_status": mission_status,
+        "path_progress": path_progress
+    })
+
+def latlon_to_meters(lat, lon, center_lat, center_lon):
+    """
+    Convert latitude/longitude (in degrees) to meters relative to a given center.
+    """
+    R = 6371000  # Earth radius in meters
+    x = (lon - center_lon) * (np.pi/180) * R * np.cos(center_lat * np.pi/180)
+    y = (lat - center_lat) * (np.pi/180) * R
+    return x, y
+
+def create_plot():
+    # Load GNSS points from JSON file with key "gnssPoints"
+    with open(os.path.join(os.getcwd(), "static", "GNSS_coordinates","coordinates.json"), "r") as file:
+        data = json.load(file)
+    
+    # Extract latitude and longitude, converting strings to floats
+    latitudes = [float(point["latitude"]) for point in data["gnssPoints"]]
+    longitudes = [float(point["longitude"]) for point in data["gnssPoints"]]
+
+    print(latitudes,longitudes)
+
+    # Compute the center (mean latitude and longitude)
+    center_lat = np.mean(latitudes)
+    center_lon = np.mean(longitudes)
+
+    # Convert all points from degrees to meters relative to the center
+    points_in_meters = [
+        latlon_to_meters(lat, lon, center_lat, center_lon)
+        for lat, lon in zip(latitudes, longitudes)
+    ]
+    x_points, y_points = zip(*points_in_meters)
+
+    # Create the plot with Matplotlib
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.scatter(x_points, y_points, color='blue', label="GNSS Points", zorder=3)
+
+    # # Draw a dashed red circle with a 2 km radius
+    # circle = plt.Circle((0, 0), 2000, color='red', fill=False, linestyle="dashed", label="2 km Radius")
+    # ax.add_patch(circle)
+
+    # Formatting the plot
+    # ax.set_xlabel("East-West Distance (meters)")
+    # ax.set_ylabel("North-South Distance (meters)")
+    # ax.set_title("GNSS Points with 2 km Radius")
+    ax.legend()
+    ax.set_xlim(-2100, 2100)
+    ax.set_ylim(-2100, 2100)
+    ax.set_aspect('equal')
+
+    # Save the plot into a bytes buffer as a PNG image
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight")
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+
+@app.route("/plot.png")
+def plot_png():
+    buf = create_plot()
+    return Response(buf.getvalue(), mimetype="image/png")
+
+
+def generate_continuous_feed(image_path, mimetype):
+    while True:
+        # Process the image with a random rotation as before
+        angle = random.uniform(0, 10)
+        img = Image.open(image_path)
+        img = img.rotate(angle, expand=False)
+        buf = BytesIO()
+
+        save_format = "PNG" if "png" in image_path.lower() else "JPEG"
+        img.save(buf, format=save_format)
+        buf.seek(0)
+
+        # Construct the part of a multipart response
+        frame = buf.read()
+        yield (b'--frame\r\n'
+               b'Content-Type: ' + mimetype.encode() + b'\r\n\r\n' + frame + b'\r\n')
+        time.sleep(1)  # adjust delay as needed
+
+@app.route("/xview_stream")
+def xview_stream():
+    return Response(generate_continuous_feed("static/images/sideview.png", "image/png"),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/yview_stream")
+def yview_stream():
+    return Response(generate_continuous_feed("static/images/topview.png", "image/png"),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/zview_stream")
+def zview_stream():
+    return Response(generate_continuous_feed("static/images/frontview.png", "image/png"),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/topview")
+def topview():
+    return send_file("static/images/pointed_rover.png","image/png")
+
+@app.route("/arm")
+def armview():
+    return send_file("static/images/pointed.png","image/png")
+
+
+#power
+@app.route('/ampere-values-wheel')
+def ampere_values_wheel():
+    # Generate random ampere values for 6 items (for example, values between 0 and 10 A)
+    data = {
+        "item1": f"{0} A",
+        "item2": f"{random.uniform(0, 10):.2f} A",
+        "item3": f"{random.uniform(0, 10):.2f} A",
+        "item4": f"{random.uniform(0, 10):.2f} A",
+        "item5": f"{random.uniform(0, 10):.2f} A",
+        "item6": f"{random.uniform(0, 10):.2f} A"
+    }
+    return jsonify(data)
+
+
+@app.route('/ampere-values-arm')
+def ampere_values_arm():
+    # Generate random ampere values for 6 descriptors.
+    data = {
+        "desc1": f"{0} A",
+        "desc2": f"{random.uniform(0, 10):.2f} A",
+        "desc3": f"{random.uniform(0, 10):.2f} A",
+        "desc4": f"{random.uniform(0, 10):.2f} A",
+        "desc5": f"{random.uniform(0, 10):.2f} A",
+        "desc6": f"{random.uniform(0, 10):.2f} A"
+    }
+    return jsonify(data)
+
+@app.route('/compass-value')
+def compass_value():
+    # Generate a random compass angle between 0 and 360 degrees.
+    angle = random.uniform(0, 0)
+    # Return as JSON (formatted to 2 decimals for clarity)
+    return jsonify({"angle": f"{angle:.2f}"})
+
+
+
+class RoverSimulator:
+    def __init__(self):
+        # Initialize rover state
+        self.x = 400  # Start in middle of canvas
+        self.y = 300
+        self.heading = random.uniform(0, 360)
+        self.speed = 2
+        self.last_update = time.time()
+        
+    def update_position(self):
+        # Add some natural movement variation
+        self.heading += random.uniform(-5, 5)  # Small random turns
+        
+        # Calculate new position
+        dx = self.speed * math.cos(math.radians(self.heading))
+        dy = self.speed * math.sin(math.radians(self.heading))
+        
+        # Update position
+        self.x = max(50, min(750, self.x + dx))  # Keep within canvas bounds
+        self.y = max(50, min(550, self.y + dy))
+        
+        # Bounce off edges
+        if self.x <= 50 or self.x >= 750:
+            self.heading = 180 - self.heading
+        if self.y <= 50 or self.y >= 550:
+            self.heading = -self.heading
+            
+        return {
+            "x": round(self.x, 2),
+            "y": round(self.y, 2),
+            "heading": round(self.heading, 2)
+        }
+
+rover = RoverSimulator()
+
+@app.route('/rover-position')
+def rover_position():
+    return jsonify(rover.update_position())
 
 
 if __name__ == '__main__':

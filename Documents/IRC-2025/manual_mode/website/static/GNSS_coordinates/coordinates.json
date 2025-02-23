@@ -1,0 +1,11 @@
+{
+  "gnssPoints": [
+    { "latitude": "12.971600", "longitude": "77.594600" },
+    { "latitude": "12.979000", "longitude": "77.594600" },
+    { "latitude": "12.964200", "longitude": "77.594600" },
+    { "latitude": "12.971600", "longitude": "77.602000" },
+    { "latitude": "12.971600", "longitude": "77.587200" },
+    { "latitude": "12.976000", "longitude": "77.599000" },
+    { "latitude": "12.967000", "longitude": "77.589000" }
+  ]
+}

@@ -1,150 +1,184 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GNSS Coordinates Form</title>
-    <style>
-      /* White background for the page and flex centering */
-      body {
-        background: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        font-family: Arial, sans-serif;
-      }
-      /* Form container styling */
-      .form-container {
-        background: #ff6b00;
-        padding: 20px;
-        border-radius: 10px;
-        max-width: 500px;
-        width: 90%;
-        box-sizing: border-box;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      }
-      /* Style the form elements */
-      form {
-        display: flex;
-        flex-direction: column;
-      }
-      input[type="text"] {
-        margin-bottom: 15px;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        font-size: 1em;
-      }
-      input[type="submit"] {
-        padding: 10px;
-        background: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 1em;
-        cursor: pointer;
-        transition: background 0.3s ease;
-      }
-      input[type="submit"]:hover {
-        background: #e0e0e0;
-      }
-      /* Responsive adjustments */
-      @media (max-width: 600px) {
-        .form-container {
-          width: 90%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="form-container">
-      <form id="gnssForm">
-        <input
-          type="text"
-          name="gnss1"
-          placeholder="GNSS Coordinate 1"
-          required
-        />
-        <input
-          type="text"
-          name="gnss2"
-          placeholder="GNSS Coordinate 2"
-          required
-        />
-        <input
-          type="text"
-          name="gnss3"
-          placeholder="GNSS Coordinate 3"
-          required
-        />
-        <input
-          type="text"
-          name="gnss4"
-          placeholder="GNSS Coordinate 4"
-          required
-        />
-        <input
-          type="text"
-          name="gnss5"
-          placeholder="GNSS Coordinate 5"
-          required
-        />
-        <input
-          type="text"
-          name="gnss6"
-          placeholder="GNSS Coordinate 6"
-          required
-        />
-        <input
-          type="text"
-          name="gnss7"
-          placeholder="GNSS Coordinate 7"
-          required
-        />
+
+<style>
+  /* White background for the page and flex centering */
+  body {
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  /* Form container styling */
+  .form-container {
+    background: #ff6b00;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 90%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(247, 247, 247, 0.2);
+    display: flex;
+  }
+  /* Style the form elements */
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+  }
+  .coordinate-group {
+    flex: 1 1 45%;
+    display: flex;
+    flex-direction: column;
+  }
+  .coordinate-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .coordinate-group input {
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+  }
+  .full-width {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+  input[type="submit"] {
+    padding: 10px;
+    background: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+  }
+  input[type="submit"]:hover {
+    background: #e0e0e0;
+  }
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .coordinate-group {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+</center>
+<div class="form-container">
+    <form id="gnssForm">
+      <!-- Repeat for 7 GNSS points -->
+      <div class="coordinate-group">
+        <label>GNSS Point 1 - Latitude</label>
+        <input type="text" name="gnss1_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 1 - Longitude</label>
+        <input type="text" name="gnss1_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="coordinate-group">
+        <label>GNSS Point 2 - Latitude</label>
+        <input type="text" name="gnss2_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 2 - Longitude</label>
+        <input type="text" name="gnss2_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="coordinate-group">
+        <label>GNSS Point 3 - Latitude</label>
+        <input type="text" name="gnss3_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 3 - Longitude</label>
+        <input type="text" name="gnss3_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="coordinate-group">
+        <label>GNSS Point 4 - Latitude</label>
+        <input type="text" name="gnss4_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 4 - Longitude</label>
+        <input type="text" name="gnss4_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="coordinate-group">
+        <label>GNSS Point 5 - Latitude</label>
+        <input type="text" name="gnss5_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 5 - Longitude</label>
+        <input type="text" name="gnss5_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="coordinate-group">
+        <label>GNSS Point 6 - Latitude</label>
+        <input type="text" name="gnss6_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 6 - Longitude</label>
+        <input type="text" name="gnss6_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="coordinate-group">
+        <label>GNSS Point 7 - Latitude</label>
+        <input type="text" name="gnss7_lat" placeholder="Latitude" required />
+      </div>
+      <div class="coordinate-group">
+        <label>GNSS Point 7 - Longitude</label>
+        <input type="text" name="gnss7_long" placeholder="Longitude" required />
+      </div>
+
+      <div class="full-width">
         <input type="submit" value="Submit" />
-      </form>
-    </div>
+      </div>
+    </form>
 
-    <script>
-      document
-        .getElementById("gnssForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
+</div>
+</center>
+<script>
+  document
+    .getElementById("gnssForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-          // Create an object with the 7 coordinates
-          const formData = new FormData(this);
-          const data = {
-            gnss1: formData.get("gnss1"),
-            gnss2: formData.get("gnss2"),
-            gnss3: formData.get("gnss3"),
-            gnss4: formData.get("gnss4"),
-            gnss5: formData.get("gnss5"),
-            gnss6: formData.get("gnss6"),
-            gnss7: formData.get("gnss7"),
-          };
+      // Gather the GNSS coordinate pairs into an array of objects
+      const formData = new FormData(this);
+      const gnssPoints = [];
+      for (let i = 1; i <= 7; i++) {
+        const lat = formData.get(`gnss${i}_lat`);
+        const long = formData.get(`gnss${i}_long`);
+        gnssPoints.push({ latitude: lat, longitude: long });
+      }
 
-          try {
-            // Send data to the server via POST
-            const response = await fetch("/save", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(data),
-            });
+      // Prepare the data to send
+      const data = { gnssPoints };
 
-            // Expect a JSON response that includes a redirect URL
-            const result = await response.json();
-            if (result.redirectUrl) {
-              window.location.href = result.redirectUrl;
-            } else {
-              alert("Submission complete, but no redirect URL provided.");
-            }
-          } catch (error) {
-            console.error("Error:", error);
-          }
+      try {
+        // Send data to the server via POST
+        const response = await fetch("/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
         });
-    </script>
-  </body>
-</html>
+
+        // Expect a JSON response that includes a redirect URL
+        const result = await response.json();
+        if (result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+        } else {
+          alert("Submission complete, but no redirect URL provided.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
+</script>

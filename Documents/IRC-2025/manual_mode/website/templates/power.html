@@ -1,108 +1,263 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Rover UI with STL</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    #info-panel {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      color: #fff;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 10px;
-      font-family: Arial, sans-serif;
-    }
-    .wheel-data {
-      margin: 5px 0;
-    }
-  </style>
-</head>
-<body>
+{% extends 'index.html' %} {% block content %}
 
-<div id="info-panel">
-  <h3>Rover Wheel Data</h3>
-  <div class="wheel-data" id="wheel-1">Wheel 1 - Amp: <span id="amp1">0</span> | Volt: <span id="volt1">0</span></div>
-  <div class="wheel-data" id="wheel-2">Wheel 2 - Amp: <span id="amp2">0</span> | Volt: <span id="volt2">0</span></div>
-  <div class="wheel-data" id="wheel-3">Wheel 3 - Amp: <span id="amp3">0</span> | Volt: <span id="volt3">0</span></div>
-  <div class="wheel-data" id="wheel-4">Wheel 4 - Amp: <span id="amp4">0</span> | Volt: <span id="volt4">0</span></div>
+<style>
+  .container {
+    display: flex;
+    width: 100%;
+    height: 95vh;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    background-color: black;
+  }
+
+  .container .one {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+    height: 75vh;
+  }
+
+  .box {
+    width: 45%;
+    height: 60vh;
+    border: 1px solid orange;
+    border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: black;
+    position: relative;
+  }
+
+  .box .rover {
+    width: 70%;
+    height: 80%;
+  }
+
+  #item1 {
+    position: absolute;
+    top: 18%;
+    left: 12%;
+  }
+
+  #item2 {
+    position: absolute;
+    top: 51%;
+    left: 7%;
+  }
+
+  #item3 {
+    position: absolute;
+    top: 81%;
+    left: 8%;
+  }
+
+  #item4 {
+    position: absolute;
+    top: 18%;
+    left: 83%;
+  }
+
+  #item5 {
+    position: absolute;
+    top: 51%;
+    left: 84%;
+  }
+
+  #item6 {
+    position: absolute;
+    top: 81%;
+    left: 84%;
+  }
+
+  .two {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid orange;
+    width: 95%;
+    height: 25vh;
+    border-radius: 50px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+  .item {
+    width: 16.66666%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  .item img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .item p {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: orange;
+  }
+
+  .desc1 {
+    position: absolute;
+    top: 31%;
+    right: 14%;
+  }
+
+  .desc2 {
+    position: absolute;
+    top: 45%;
+    right: 13%;
+  }
+
+  .desc3 {
+    position: absolute;
+    bottom: 28%;
+    right: 25%;
+  }
+
+  .desc4 {
+    position: absolute;
+    top: 12%;
+    left: 23%;
+  }
+
+  .desc5 {
+    position: absolute;
+    top: 32%;
+    left: 10%;
+  }
+
+  /* .desc6 {
+    position: absolute;
+    bottom: 8%;
+    left: 38%;
+  } */
+
+  .item img {
+    width: 70px;
+    height: 70px;
+  }
+</style>
+
+<div class="container">
+  <div class="one">
+    <div class="box">
+      <img src="/topview" alt="" class="rover" />
+      <div class="small-container row1">
+        <div class="small" id="item1">Item 1</div>
+        <div class="small" id="item2">Item 2</div>
+        <div class="small" id="item3">Item 3</div>
+      </div>
+
+      <div class="small-container row2">
+        <div class="small" id="item4">Item 4</div>
+        <div class="small" id="item5">Item 5</div>
+        <div class="small" id="item6">Item 6</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <img src="/arm" alt="" />
+      <div class="small desc1"></div>
+      <div class="small desc2"></div>
+      <div class="small desc3"></div>
+      <div class="small desc4"></div>
+      <div class="small desc5"></div>
+      <!-- <div class="small desc6"></div> -->
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="item">
+      <img src="/static/images/battery.png" alt="Image 1" />
+      <p>Text 1</p>
+    </div>
+    <div class="item">
+      <img src="/static/images/humidity.png" alt="Image 2" />
+      <p>Text 2</p>
+    </div>
+    <div class="item">
+      <img src="https://via.placeholder.com/150" alt="Image 3" />
+      <p>Text 3</p>
+    </div>
+    <div class="item">
+      <img src="https://via.placeholder.com/150" alt="Image 4" />
+      <p>Text 4</p>
+    </div>
+    <div class="item">
+      <img src="https://via.placeholder.com/150" alt="Image 5" />
+      <p>Text 5</p>
+    </div>
+    <div class="item">
+      <img src="https://via.placeholder.com/150" alt="Image 6" />
+      <p>Text 6</p>
+    </div>
+  </div>
 </div>
 
-<script src="three.min.js"></script>
-<script src="STLLoader.js"></script>
-
 <script>
-  let scene, camera, renderer, rover;
+  // rover-code
+  function updateItem(itemId, ampValueStr) {
+    const element = document.getElementById(itemId);
 
-  // Initialize Three.js Scene
-  function init() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 200;
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Lighting
-    const light = new THREE.DirectionalLight(0xff8419, 1);
-    light.position.set(5, 5, 5).normalize();
-    scene.add(light);
-
-    // Load Rover Model (STL format)
-    const loader = new THREE.STLLoader();
-    loader.load('rover_model.stl', function(geometry) {
-      const material = new THREE.MeshPhongMaterial({ color: 0xffffff});
-      rover = new THREE.Mesh(geometry, material);
-      rover.scale.set(0.1, 0.1, 0.1);  // Adjust scale if needed
-      scene.add(rover);
-      animate();
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', onWindowResize, false);
-
-    // Connect WebSocket for live data
-    connectWebSocket();
+    const numericValue = parseFloat(ampValueStr);
+    element.textContent = ampValueStr;
+    element.style.color = numericValue === 0 ? "red" : "green";
   }
 
-  function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-
-  // WebSocket connection
-  function connectWebSocket() {
-    const socket = new WebSocket('ws://localhost:8000');
-    socket.onmessage = function(event) {
-      const data = JSON.parse(event.data);
-      document.getElementById('amp1').textContent = data.wheel1.amp;
-      document.getElementById('volt1').textContent = data.wheel1.volt;
-      document.getElementById('amp2').textContent = data.wheel2.amp;
-      document.getElementById('volt2').textContent = data.wheel2.volt;
-      document.getElementById('amp3').textContent = data.wheel3.amp;
-      document.getElementById('volt3').textContent = data.wheel3.volt;
-      document.getElementById('amp4').textContent = data.wheel4.amp;
-      document.getElementById('volt4').textContent = data.wheel4.volt;
-    };
-  }
-
-  // Render loop
-  function animate() {
-    requestAnimationFrame(animate);
-    if (rover) {
-        rover.rotation.y += 0.001;  // Rotate the rover model for animation
-        // rover.rotation.x += 0.001;
-        // rover.rotation.z += 0.001;  // Rotate for view
-      console.log(rover.rotation.y);  // Rotate for view
+  async function updateAmpereValues_wheel() {
+    try {
+      const response = await fetch("/ampere-values-wheel");
+      const data = await response.json();
+      updateItem("item1", data.item1);
+      updateItem("item2", data.item2);
+      updateItem("item3", data.item3);
+      updateItem("item4", data.item4);
+      updateItem("item5", data.item5);
+      updateItem("item6", data.item6);
+    } catch (error) {
+      console.error("Error fetching ampere values:", error);
     }
-    renderer.render(scene, camera);
   }
 
-  init();
+  setInterval(updateAmpereValues_wheel, 1000);
+
+  updateAmpereValues_wheel();
+
+  // armvalue
+
+  async function updateAmpereValues() {
+    try {
+      const response = await fetch("/ampere-values-arm");
+      const data = await response.json();
+      // Iterate over each key (desc1, desc2, etc.) and update the element.
+      Object.keys(data).forEach((key) => {
+        const element = document.querySelector("." + key);
+        const ampValueStr = data[key];
+        const numericValue = parseFloat(ampValueStr);
+        element.textContent = ampValueStr;
+        // Set the background color: red for zero, green otherwise.
+        element.style.color = numericValue === 0 ? "red" : "green";
+      });
+    } catch (error) {
+      console.error("Error fetching ampere values:", error);
+    }
+  }
+
+  // Update the ampere values every second.
+  setInterval(updateAmpereValues, 1000);
+  // Initial update on page load.
+  updateAmpereValues();
 </script>
-</body>
-</html>
+
+{% endblock %}

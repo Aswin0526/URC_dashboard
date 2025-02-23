@@ -1,58 +1,6 @@
 {% extends 'index.html' %} {% block content %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/autonomous.css') }}"
-/>
-<script src="{{ url_for('static', filename='js/automode.js') }}"></script>
-
-<div class="main-container">
-  <!-- Camera Feed Section -->
-  <div class="camera-feed">
-    <!-- Instead of an image, using a background color or pattern -->
-    <div class="camera-background">
-      <!-- This div simulates the camera feed; later you can replace its background with a live video element -->
-    </div>
-  </div>
-
-  <!-- Lower Section: Three Columns Row -->
-  <div class="lower-section">
-    <div class="column timer-column">
-      <h1 id="timer">00:00:00</h1>
-      <div class="timer-controls">
-        <button id="start">Start</button>
-        <button id="stop">Stop</button>
-        <button id="restart">Restart</button>
-      </div>
-    </div>
-    <div class="column checkpoints-column">
-      <h2>Checkpoints</h2>
-      <div class="checkpoints">
-        <!-- Dummy checkpoints -->
-        <div class="checkpoint">CP1</div>
-        <div class="checkpoint">CP2</div>
-        <div class="checkpoint">CP3</div>
-        <div class="checkpoint">CP4</div>
-        <div class="checkpoint">CP5</div>
-        <div class="checkpoint">CP6</div>
-        <div class="checkpoint">CP7</div>
-      </div>
-    </div>
-    <div class="column empty-column">
-      <!-- Empty column for future content -->
-    </div>
-  </div>
-</div>
 
 <style>
-  /* Overall page styling */
-  body {
-    background: #fff;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-  }
-
-  /* Main container centers content */
   .main-container {
     width: 95%;
     margin: 0 auto;
@@ -61,112 +9,300 @@
     gap: 20px;
   }
 
-  /* Camera Feed Section */
   .camera-feed {
     margin-top: 30px;
     width: 100%;
     height: 65vh;
-    background: #333; /* fallback dark background */
+    background: #333;
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
   }
 
-  .camera-background {
+  .sensor-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 20px;
+  }
+
+  .gps-display,
+  .compass-container {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  .compass-container {
+    width: 100px;
+    height: 100px;
+    position: relative;
+  }
+
+  .compass {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #444, #666);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-    font-size: 2em;
+    position: relative;
+    transition: transform 0.3s ease;
   }
 
-  /* Lower section: three columns row */
+  .compass-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 80%;
+    background: red;
+    transform-origin: bottom center;
+    transform: translate(-50%, -50%);
+  }
+
   .lower-section {
     display: flex;
-    flex-direction: row;
     gap: 20px;
-    justify-content: space-between;
   }
 
-  .lower-section .column {
-    flex: 1;
+  .timer-column {
+    flex: 0.2;
     background: #f5f5f5;
     padding: 15px;
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
-  /* Timer Column */
-  .timer-column {
+  .mission-column {
+    flex: 0.4;
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .path-column {
+    flex: 0.4;
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .mission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .mission-item {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-  }
-
-  .timer-column h1 {
-    font-size: 3em;
-    margin-bottom: 10px;
-  }
-
-  .timer-controls {
-    display: flex;
     gap: 10px;
-  }
-
-  .timer-controls button {
-    padding: 10px 15px;
-    font-size: 1em;
-    border: none;
-    border-radius: 5px;
-    background: #ff6b00;
-    color: #fff;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  .timer-controls button:hover {
-    background: #e65a00;
-  }
-
-  /* Checkpoints Column */
-  .checkpoints-column h2 {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  .checkpoints {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .checkpoint {
-    flex: 1;
-    min-width: 50px;
-    background: #ff6b00;
     padding: 10px;
-    text-align: center;
+    background: #fff;
     border-radius: 5px;
-    color: #fff;
-    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  /* Empty Column */
-  .empty-column {
-    /* Currently empty – adjust as needed */
+  .mission-status {
+    width: 20px;
+    height: 20px;
   }
 
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .lower-section {
-      flex-direction: column;
-    }
+  .path-visualization {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    border: 1px solid #ccc;
+    overflow: hidden;
+  }
+
+  .path-visualization img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+  }
+
+  .waypoint {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #ff6b00;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .path-line {
+    position: absolute;
+    background: #ff6b00;
+    height: 2px;
+    transform-origin: left center;
+  }
+
+  .rover-position {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: #00ff00;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.5s ease;
   }
 </style>
+
+<div class="main-container">
+  <div class="camera-feed">
+    <div class="sensor-overlay">
+      <div class="gps-display">
+        <div>Latitude: <span id="latitude">0.0000</span></div>
+        <div>Longitude: <span id="longitude">0.0000</span></div>
+      </div>
+      <div class="compass-container">
+        <div class="compass">
+          <div class="compass-arrow"></div>
+        </div>
+      </div>
+    </div>
+    <div class="camera-background"></div>
+  </div>
+
+  <div class="lower-section">
+    <div class="timer-column">
+      <h1 id="timer">00:00:00</h1>
+      <div class="timer-controls">
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <button id="restart">Restart</button>
+      </div>
+    </div>
+
+    <div class="mission-column">
+      <h2>Mission Status</h2>
+      <div class="mission-grid">
+        <div class="mission-item">
+          Mission 1 <span class="mission-status">❌</span>
+        </div>
+        <div class="mission-item">
+          Mission 2 <span class="mission-status">❌</span>
+        </div>
+        <div class="mission-item">
+          Mission 3 <span class="mission-status">❌</span>
+        </div>
+        <div class="mission-item">
+          Mission 4 <span class="mission-status">❌</span>
+        </div>
+        <div class="mission-item">
+          Mission 5 <span class="mission-status">❌</span>
+        </div>
+        <div class="mission-item">
+          Mission 6 <span class="mission-status">❌</span>
+        </div>
+        <div class="mission-item">
+          Mission 7 <span class="mission-status">❌</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="path-column">
+      <h2>Path Visualization</h2>
+      <div class="path-visualization" id="pathViz">
+        <img src="/plot.png" alt="GNSS Map" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Waypoints from your JSON
+
+  // Update sensor data
+  function updateSensorData() {
+    fetch("/api/sensor_data")
+      .then((response) => response.json())
+      .then((data) => {
+        // Update GPS
+        document.getElementById("latitude").textContent = data.gps.latitude;
+        document.getElementById("longitude").textContent = data.gps.longitude;
+
+        // Update compass
+        document.querySelector(
+          ".compass"
+        ).style.transform = `rotate(${data.compass}deg)`;
+
+        // Update mission status
+        const missionStatuses = document.querySelectorAll(".mission-status");
+        data.mission_status.forEach((status, index) => {
+          missionStatuses[index].textContent = status ? "✅" : "❌";
+        });
+
+        // Update rover position
+        const pathViz = document.getElementById("pathViz");
+        const containerRect = pathViz.getBoundingClientRect();
+        const rover = pathViz.querySelector(".rover-position");
+
+        const currentPoint = waypoints[data.path_progress];
+        const x =
+          ((parseFloat(currentPoint.longitude) % 100) / 100) *
+          containerRect.width;
+        const y =
+          ((parseFloat(currentPoint.latitude) % 100) / 100) *
+          containerRect.height;
+
+        rover.style.left = `${x}px`;
+        rover.style.top = `${y}px`;
+      });
+  }
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", () => {
+    initPathVisualization();
+    setInterval(updateSensorData, 1000);
+  });
+
+  // Timer functionality
+  let timerInterval;
+  let seconds = 0;
+  let isRunning = false;
+
+  function formatTime(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function updateTimer() {
+    seconds++;
+    document.getElementById("timer").textContent = formatTime(seconds);
+  }
+
+  document.getElementById("start").addEventListener("click", function () {
+    if (!isRunning) {
+      isRunning = true;
+      timerInterval = setInterval(updateTimer, 1000);
+      this.disabled = true;
+      document.getElementById("stop").disabled = false;
+    }
+  });
+
+  document.getElementById("stop").addEventListener("click", function () {
+    if (isRunning) {
+      isRunning = false;
+      clearInterval(timerInterval);
+      this.disabled = true;
+      document.getElementById("start").disabled = false;
+    }
+  });
+
+  document.getElementById("restart").addEventListener("click", function () {
+    isRunning = false;
+    clearInterval(timerInterval);
+    seconds = 0;
+    document.getElementById("timer").textContent = "00:00:00";
+    document.getElementById("start").disabled = false;
+    document.getElementById("stop").disabled = false;
+  });
+</script>
+
 {% endblock %}
