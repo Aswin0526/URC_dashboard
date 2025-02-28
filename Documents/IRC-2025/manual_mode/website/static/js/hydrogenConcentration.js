@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function updateHydrogenConcentration() {
         try {
             // Assuming a fetch API is available to get hydrogen concentration data
-            const response = await fetch('http://:192.168.1.110:5000/science-subsystem/hydrogen-concentration'); // Replace with your actual endpoint
+            const response = await fetch('/science-subsystem/hydrogen-concentration'); // Replace with your actual endpoint
             const data = await response.json();
             const hydrogenConcentration = data.hydrogen_concentration; // Assuming the data has a property called 'hydrogen_concentration'
 

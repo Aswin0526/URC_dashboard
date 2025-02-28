@@ -263,9 +263,8 @@
     <div class="control-box">
       <canvas id="trackingCanvas"></canvas>
       <div class="status-overlay">
-        <div>X: <span id="xPos">0</span></div>
-        <div>Y: <span id="yPos">0</span></div>
-        <div>Heading: <span id="heading">0</span>°</div>
+        <div>Latitude: <span id="latitude">0</span></div>
+        <div>Longitude: <span id="longitude">0</span></div>
       </div>
     </div>
   </div>
@@ -307,7 +306,6 @@
   setInterval(updateCompass, 1000);
   updateCompass();
 
-  // Rover Path Drawing on Canvas
   const controlBox = document.querySelector(".control-box");
   const canvas = document.getElementById("trackingCanvas");
   const ctx = canvas.getContext("2d");
@@ -320,84 +318,40 @@
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
 
-  let pathPoints = [];
-  let pathSegments = [];
+  let pathPoints = [
+    { latitude: 37.7749, longitude: -122.4194 },
+    { latitude: 37.775, longitude: -122.4195 },
+    { latitude: 37.7751, longitude: -122.4196 },
+    { latitude: 37.7752, longitude: -122.4197 },
+    { latitude: 37.7753, longitude: -122.4198 },
+  ];
 
-  function drawRover(x, y, heading) {
-    const size = 8;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate((heading * Math.PI) / 180);
-    ctx.beginPath();
-    ctx.moveTo(size, 0);
-    ctx.lineTo(-size, -size);
-    ctx.lineTo(-size, size);
-    ctx.closePath();
-    ctx.fillStyle = "#0066ff";
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(0, 0, size / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = "#003d99";
-    ctx.fill();
-    ctx.restore();
+  function latLonToCanvas(lat, lon) {
+    // Normalize lat/lon to fit within the canvas
+    const x = ((lon + 180) / 360) * canvas.width;
+    const y = canvas.height - ((lat + 90) / 180) * canvas.height;
+    return { x, y };
   }
 
   function drawPath() {
-    for (const segment of pathSegments) {
-      if (segment.length < 2) continue;
-      const gradient = ctx.createLinearGradient(
-        0,
-        0,
-        canvas.width,
-        canvas.height
+    if (pathPoints.length < 2) return;
+
+    ctx.beginPath();
+    let { x, y } = latLonToCanvas(
+      pathPoints[0].latitude,
+      pathPoints[0].longitude
+    );
+    ctx.moveTo(x, y);
+
+    for (let i = 1; i < pathPoints.length; i++) {
+      let { x, y } = latLonToCanvas(
+        pathPoints[i].latitude,
+        pathPoints[i].longitude
       );
-      gradient.addColorStop(0, "#ff6b00");
-      gradient.addColorStop(1, "#ff3300");
-      ctx.beginPath();
-      ctx.moveTo(segment[0].x, segment[0].y);
-      for (let i = 1; i < segment.length - 2; i++) {
-        const xc = (segment[i].x + segment[i + 1].x) / 2;
-        const yc = (segment[i].y + segment[i + 1].y) / 2;
-        ctx.quadraticCurveTo(segment[i].x, segment[i].y, xc, yc);
-      }
-      if (segment.length > 2) {
-        ctx.quadraticCurveTo(
-          segment[segment.length - 2].x,
-          segment[segment.length - 2].y,
-          segment[segment.length - 1].x,
-          segment[segment.length - 1].y
-        );
-      }
-      ctx.strokeStyle = gradient;
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      ctx.lineTo(x, y);
     }
 
-    if (pathPoints.length < 2) return;
-    const gradient = ctx.createLinearGradient(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-    gradient.addColorStop(0, "#ff6b00");
-    gradient.addColorStop(1, "#ff3300");
-    ctx.beginPath();
-    ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
-    for (let i = 1; i < pathPoints.length - 2; i++) {
-      const xc = (pathPoints[i].x + pathPoints[i + 1].x) / 2;
-      const yc = (pathPoints[i].y + pathPoints[i + 1].y) / 2;
-      ctx.quadraticCurveTo(pathPoints[i].x, pathPoints[i].y, xc, yc);
-    }
-    if (pathPoints.length > 2) {
-      ctx.quadraticCurveTo(
-        pathPoints[pathPoints.length - 2].x,
-        pathPoints[pathPoints.length - 2].y,
-        pathPoints[pathPoints.length - 1].x,
-        pathPoints[pathPoints.length - 1].y
-      );
-    }
-    ctx.strokeStyle = gradient;
+    ctx.strokeStyle = "#ff6b00";
     ctx.lineWidth = 3;
     ctx.stroke();
   }
@@ -420,31 +374,32 @@
     }
   }
 
-  async function updateRoverPosition() {
-    try {
-      const response = await fetch("/rover-position");
-      const data = await response.json();
-      const scaled = {
-        x: (data.x / 800) * canvas.width,
-        y: (data.y / 600) * canvas.height,
-        heading: data.heading,
-      };
-      pathPoints.push(scaled);
-      if (pathPoints.length > 100) {
-        pathSegments.push([...pathPoints]);
-        pathPoints = [pathPoints[pathPoints.length - 1]];
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawGrid();
-      drawPath();
-      drawRover(scaled.x, scaled.y, scaled.heading);
-      document.getElementById("xPos").textContent = data.x.toFixed(1);
-      document.getElementById("yPos").textContent = data.y.toFixed(1);
-      document.getElementById("heading").textContent = data.heading.toFixed(1);
-    } catch (error) {
-      console.error("Error updating rover position:", error);
+  function updateCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid();
+    drawPath();
+  }
+
+  function updateDisplay() {
+    if (pathPoints.length > 0) {
+      const latestPoint = pathPoints[pathPoints.length - 1];
+      document.getElementById("latitude").textContent =
+        latestPoint.latitude.toFixed(6);
+      document.getElementById("longitude").textContent =
+        latestPoint.longitude.toFixed(6);
     }
   }
-  setInterval(updateRoverPosition, 100);
+
+  // Simulate adding new GNSS points every 2 seconds (for testing)
+  setInterval(() => {
+    let lastPoint = pathPoints[pathPoints.length - 1];
+    let newPoint = {
+      latitude: lastPoint.latitude + 0.0001, // Small increment for movement
+      longitude: lastPoint.longitude + 0.0001,
+    };
+    pathPoints.push(newPoint);
+    updateCanvas();
+    updateDisplay();
+  }, 2000);
 </script>
 {% endblock %}

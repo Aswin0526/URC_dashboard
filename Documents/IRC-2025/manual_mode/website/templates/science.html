@@ -133,21 +133,10 @@
       Spectrometer Analysis
     </h1>
     <div class="flex flex-col justify-center h-full p-8">
-      <div>
-        Wavelength :
-        <span id="BME680-temperature">{{data.BME680.temperature}}</span>(NM)
-      </div>
-      <div>
-        Absorbance : <span id="BME680-humidity">{{data.BME680.humidity}}</span>
-      </div>
-      <div>
-        transmittance :
-        <span id="BME680-pressure">{{data.BME680.pressure}}</span>
-      </div>
-      <div>
-        Reflectance Intensity :
-        <span id="BME680-voc">{{data.BME680.voc}}</span>
-      </div>
+      <div>Wavelength: <span id="BME680-temperature">--</span> (NM)</div>
+      <div>Absorbance: <span id="BME680-humidity">--</span></div>
+      <div>Transmittance: <span id="BME680-pressure">--</span></div>
+      <div>Reflectance Intensity: <span id="BME680-voc">--</span></div>
     </div>
   </div>
 </div>
@@ -171,47 +160,72 @@
 <script src="{{ url_for('static', filename='js/NPK.js')}}"></script>
 <script src="{{ url_for('static', filename='js/BME680.js')}}"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-      var gauge = anychart.gauges.linear();
 
-      function updateGauge(data) {
-          gauge.data([data]);
+  document.addEventListener("keydown", (event) => {
+      if (event.ctrlKey && event.key === "p") {
+          event.preventDefault(); // Prevents the print dialog
+          console.log("Print disabled");
       }
-
-      var initialPHData = 0;
-      gauge.data([initialPHData]).padding(10, 0, 30, 0);
-
-      var scale = gauge.scale();
-      scale.minimum(-40).maximum(125).ticks({ interval: 25 });
-      {% raw %}
-      var axis = gauge.axis();
-      axis.scale(scale).width('0.5%').offset('-3%');
-      axis.labels().useHtml(true).format('{%Value} &deg C');
-      {% endraw %}
-      var indicator = gauge.thermometer(0);
-      indicator
-          .fill('#ff8419')
-
-      gauge.container('container');
-      gauge.draw();
-
-      async function fetchSoilTemperature() {
-          try {
-              const response = await fetch('http://192.168.1.110:5000/science-subsystem/soil-temperature')
-              const data = await response.json()
-              console.log("fetchST" + data)
-              return data.soil_temperature
-          } catch (error) {
-              console.error("Error fetching soil temperature", error)
-              return 0
-          }
-      }
-
-      setInterval(async function() {
-          var soilTemperature = await fetchSoilTemperature();
-          console.log("soil temperature " + soilTemperature);
-          updateGauge(soilTemperature);
-      }, 1000);
   });
+
+    async function fetchData() {
+                try {
+                    const response = await fetch("/api/random-data");
+                    const data = await response.json();
+
+                    print(data)
+
+                    document.getElementById("BME680-temperature").textContent = data.BME680.temperature;
+                    document.getElementById("BME680-humidity").textContent = data.BME680.humidity;
+                    document.getElementById("BME680-pressure").textContent = data.BME680.pressure;
+                    document.getElementById("BME680-voc").textContent = data.BME680.voc;
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+            }
+
+            setInterval(fetchData, 2000); // Fetch new values every 2 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            var gauge = anychart.gauges.linear();
+
+            function updateGauge(data) {
+                gauge.data([data]);
+            }
+
+            var initialPHData = 0;
+            gauge.data([initialPHData]).padding(10, 0, 30, 0);
+
+            var scale = gauge.scale();
+            scale.minimum(-40).maximum(125).ticks({ interval: 25 });
+            {% raw %}
+            var axis = gauge.axis();
+            axis.scale(scale).width('0.5%').offset('-3%');
+            axis.labels().useHtml(true).format('{%Value} &deg C');
+            {% endraw %}
+            var indicator = gauge.thermometer(0);
+            indicator
+                .fill('#ff8419')
+
+            gauge.container('container');
+            gauge.draw();
+
+            async function fetchSoilTemperature() {
+                try {
+                    const response = await fetch('/science-subsystem/soil-temperature')
+                    const data = await response.json()
+                    console.log("fetchST" + data)
+                    return data.soil_temperature
+                } catch (error) {
+                    console.error("Error fetching soil temperature", error)
+                    return 0
+                }
+            }
+
+            setInterval(async function() {
+                var soilTemperature = await fetchSoilTemperature();
+                console.log("soil temperature " + soilTemperature);
+                updateGauge(soilTemperature);
+            }, 1000);
+        });
 </script>
 {% endblock %}

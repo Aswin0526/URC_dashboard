@@ -515,5 +515,20 @@ def rover_position():
     return jsonify(rover.update_position())
 
 
+@app.route('/api/random-data', methods=['GET'])
+def get_random_data():
+    data = {
+        "BME680": {
+            "temperature": round(random.uniform(0, 100), 2),
+            "humidity": round(random.uniform(0, 100), 2),
+            "pressure": round(random.uniform(0, 1000), 2),
+            "voc": round(random.uniform(0, 500), 2),
+        }
+    }
+
+    
+    return jsonify(data)
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000,debug=True)
